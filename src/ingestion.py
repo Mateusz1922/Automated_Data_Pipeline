@@ -1,3 +1,4 @@
+# Simple file for fetching data and saving them to a file, everything packed in a class
 import requests
 import logging
 import json
@@ -51,13 +52,3 @@ class DataIngestor:
             logging.info(f"Data saved in: {file_path}")
         except Exception as e:
             logging.error(f"Error during data saving to file: {e}")
-
-# Testing (later can be moved to main.py)
-if __name__ == "__main__":
-    # Możesz użyć darmowego API NBP: https://api.nbp.pl/api/exchangerates/tables/A?format=json
-    URL = "https://api.nbp.pl/api/exchangerates/tables/A?format=json"
-    ingestor = DataIngestor(api_url=URL, output_dir="data/raw")
-    
-    # methods invoking
-    raw_data = ingestor.fetch_data()
-    ingestor.save_to_raw(raw_data)
