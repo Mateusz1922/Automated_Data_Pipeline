@@ -1,5 +1,7 @@
+import pandas as pd
 from src.ingestion import DataIngestor
 from src.processing import DataProcessor
+from src.transformation import DataTransformer
 
 def main():
     # We can use a free NBP API: https://api.nbp.pl/api/exchangerates/tables/A?format=json
@@ -20,6 +22,11 @@ def main():
     if raw_json:
         validated = processor.validate_data(raw_json)
         cleaned = processor.clean_data(validated, MY_CURRENCIES)
+
+        # PANDAS TRANSFORMATION
+        df = DataTransformer.to_dataframe(cleaned)
+        print("\n--- Final Dataframe ---")
+        print(df.head())
 
         print(f"Data fetch date: {cleaned.effectiveDate}")
         for r in cleaned.rates:
