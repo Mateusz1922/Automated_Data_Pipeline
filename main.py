@@ -1,7 +1,8 @@
-import pandas as pd
 from src.ingestion import DataIngestor
 from src.processing import DataProcessor
 from src.transformation import DataTransformer
+from src.database import DatabaseManager
+import duckdb
 
 def main():
     # We can use a free NBP API: https://api.nbp.pl/api/exchangerates/tables/A?format=json
@@ -9,9 +10,10 @@ def main():
     URL = "https://api.nbp.pl/api/exchangerates/tables/A?format=json"
     RAW_DIR = "data/raw"
     MY_CURRENCIES = ["USD", "EUR", "GBP", "CHF"] # we want only these currencies
+    DB_PATH = "data/database/rates.duckdb"
 
     # 1. download data and save to file
-    ingestor = DataIngestor(api_url=URL, output_dir="data/raw")
+    ingestor = DataIngestor(api_url=URL, output_dir=RAW_DIR)
     raw_data = ingestor.fetch_data()
     ingestor.save_to_raw(raw_data)
 
@@ -25,12 +27,26 @@ def main():
 
         # PANDAS TRANSFORMATION
         df = DataTransformer.to_dataframe(cleaned)
-        print("\n--- Final Dataframe ---")
-        print(df.head())
+        # print("\n--- Final Dataframe ---")
+        # print(df.head())
 
-        print(f"Data fetch date: {cleaned.effectiveDate}")
-        for r in cleaned.rates:
-            print(f"Rate {r.code}: {r.rate} PLN")
+        # DATABASE LOAD
+        db = DatabaseManager(db_path=DB_PATH)
+        db.save_dataframe(df, table_name="currency_rates")
+
+        # print(f"Data fetch date: {cleaned.effectiveDate}")
+        # for r in cleaned.rates:
+        #     print(f"Rate {r.code}: {r.rate} PLN")
+        
+        # DEBUG CHECK:
+        print("\n--- Sprawdzam dane w bazie ---")
+        try:
+            # Używamy tej samej zmiennej DB_PATH co wyżej!
+            check_conn = duckdb.connect(DB_PATH)
+            print(check_conn.query("SELECT * FROM currency_rates LIMIT 5").df())
+            check_conn.close()
+        except Exception as e:
+            print(f"Błąd podczas sprawdzania bazy: {e}")
 
 if __name__ == "__main__":
     main()

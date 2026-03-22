@@ -18,6 +18,9 @@ class DataTransformer:
         # 2. Create a Dataframe
         df = pd.DataFrame(rates_dicts)
 
+        # forcd type conversion for best possible e.g. object -> string
+        df = df.convert_dtypes()
+
         # 3. Add metadata
         # Add date from NBP table
         df["effective_date"] = pd.to_datetime(validated_data.effectiveDate)

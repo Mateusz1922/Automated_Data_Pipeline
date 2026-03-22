@@ -1,0 +1,42 @@
+import duckdb
+import pandas as pd
+import logging
+from pathlib import Path
+
+class DatabaseManager:
+    def __init__(self, db_path: str):
+        self.db_path = Path(db_path)
+        # ensure that folder for the database exists
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    def save_dataframe(self, df: pd.DataFrame, table_name: str):
+        """Saves DataFrame to DuckDB database"""
+        if df.empty:
+            logging.warning("DataFrame is empty")
+            return
+        
+        # connect with the duckDB
+        conn = duckdb.connect(str(self.db_path))
+
+        try:
+            # explicitly registered dataframe
+            conn.register('temp_df', df)
+            logging.info(f"Starting connection with database: {self.db_path}")
+            # duck db sees the variable df from Python local range
+            conn.execute(f"""CREATE TABLE IF NOT EXISTS {table_name} AS 
+                             SELECT * FROM temp_df WHERE 1=0
+                          """) # now we copy only column headers, initiating empty table
+            conn.execute(f"INSERT INTO {table_name} SELECT * FROM temp_df")
+
+            # Check number of rows after saving
+            count = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
+            logging.info(f"Success! Table '{table_name}' has now {count} rows.")
+            conn.unregister('temp_df')
+        
+        except Exception as e:
+            raise logging.error(f"Saving to database error: {e}")
+        finally:
+            if conn:
+                conn.close()
+                logging.info("Database connection closed")
+

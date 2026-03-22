@@ -51,4 +51,4 @@ class DataIngestor:
                 json.dump(data, f, indent=4, ensure_ascii=False)
             logging.info(f"Data saved in: {file_path}")
         except Exception as e:
-            logging.error(f"Error during data saving to file: {e}")
+            raise logging.error(f"Error during data saving to file: {e}")
