@@ -41,9 +41,8 @@ def main():
         # DEBUG CHECK:
         print("\n--- Sprawdzam dane w bazie ---")
         try:
-            # Używamy tej samej zmiennej DB_PATH co wyżej!
             check_conn = duckdb.connect(DB_PATH)
-            print(check_conn.query("SELECT * FROM currency_rates LIMIT 5").df())
+            print(check_conn.query("SELECT * FROM currency_rates LIMIT 100").df())
             check_conn.close()
         except Exception as e:
             print(f"Błąd podczas sprawdzania bazy: {e}")

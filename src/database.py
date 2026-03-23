@@ -26,7 +26,14 @@ class DatabaseManager:
             conn.execute(f"""CREATE TABLE IF NOT EXISTS {table_name} AS 
                              SELECT * FROM temp_df WHERE 1=0
                           """) # now we copy only column headers, initiating empty table
-            conn.execute(f"INSERT INTO {table_name} SELECT * FROM temp_df")
+            conn.execute(f"""INSERT INTO {table_name} 
+                           SELECT * FROM temp_df
+                           WHERE NOT EXISTS (
+                               SELECT 1 FROM {table_name} t
+                               WHERE t.code = temp_df.code
+                               AND t.effective_date = temp_df.effective_date
+                            )
+                        """)
 
             # Check number of rows after saving
             count = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
