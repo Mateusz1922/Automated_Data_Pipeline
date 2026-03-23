@@ -1,4 +1,5 @@
 Automated NBP Currency Data Pipeline
+
 A robust, modular ETL (Extract, Transform, Load) pipeline built with Python 3.12. This project fetches currency exchange rates from the National Bank of Poland (NBP) API, validates the data structure, transforms it into an analytical format, and stores it in a high-performance DuckDB database.
 
 🚀 Key Features
@@ -24,22 +25,6 @@ Database: DuckDB (OLAP-optimized)
 Networking: Requests
 
 Environment Management: Dotenv & Virtualenv
-
-📂 Project Structure
-
-automated_data_pipeline/
-├── data/
-│   ├── raw/               # Archived raw JSON responses from API
-│   └── database/          # DuckDB database files (.duckdb)
-├── src/
-│   ├── ingestion.py       # API communication and raw storage
-│   ├── models.py          # Pydantic schemas (Data Quality)
-│   ├── processing.py      # File management and validation logic
-│   ├── transformation.py  # Pandas-based data cleaning/enrichment
-│   └── database.py        # DuckDB connection and SQL execution
-├── main.py                # Entry point (Orchestrator)
-├── requirements.txt       # Dependency list
-└── .env                   # Configuration & API keys (hidden)
 
 📊 Data Pipeline Workflow
 Extract: The DataIngestor class fetches a JSON response from the NBP API and saves it to a timestamped file in data/raw/.
