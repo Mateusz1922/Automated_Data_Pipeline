@@ -1,1 +1,21 @@
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# --- Environment & Secrets ---
 .env
+
+# --- IDE Settings ---
+.vscode/
+.idea/
+
+# --- Project Specific (Data) ---
+# We don't want to store binary databases or thousands of raw JSONs on GitHub
+data/raw/*.json
+data/database/*.duckdb
+
+# Optional: if you want to keep the folder structure but no files
+# data/raw/.gitkeep
