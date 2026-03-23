@@ -16,6 +16,3 @@ env/
 # We don't want to store binary databases or thousands of raw JSONs on GitHub
 data/raw/*.json
 data/database/*.duckdb
-
-# Optional: if you want to keep the folder structure but no files
-# data/raw/.gitkeep
