@@ -39,13 +39,13 @@ def main():
         #     print(f"Rate {r.code}: {r.rate} PLN")
         
         # DEBUG CHECK:
-        print("\n--- Sprawdzam dane w bazie ---")
+        print("\n--- Database data check ---")
         try:
             check_conn = duckdb.connect(DB_PATH)
             print(check_conn.query("SELECT * FROM currency_rates LIMIT 100").df())
             check_conn.close()
         except Exception as e:
-            print(f"Błąd podczas sprawdzania bazy: {e}")
+            print(f"Database check error: {e}")
 
 if __name__ == "__main__":
     main()
