@@ -9,6 +9,16 @@ class DatabaseManager:
         # ensure that folder for the database exists
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
     
+    def execute_query(self, query: str, params=None):
+        """Universal method to ingest data from the database"""
+        conn = duckdb.connect(str(self.db_path))
+        try:
+            if params:
+                return conn.execute(query, params).fetchall() # co to robi?
+            return conn.execute(query).fetchall()
+        finally:
+            conn.close()
+    
     def save_dataframe(self, df: pd.DataFrame, table_name: str):
         """Saves DataFrame to DuckDB database"""
         if df.empty:

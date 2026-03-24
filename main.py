@@ -1,7 +1,9 @@
-from src.ingestion import DataIngestor
-from src.processing import DataProcessor
-from src.transformation import DataTransformer
-from src.database import DatabaseManager
+from src.ingestion.nbp_rates import DataIngestor
+from src.processing.validation import DataProcessor
+from src.processing.transformation import DataTransformer
+from src.storage.duckdb import DatabaseManager
+from src.processing.quality import DataQualityChecker
+from src.analytics.cli import CliInterface
 import duckdb
 
 def main():
@@ -9,10 +11,14 @@ def main():
 
     URL = "https://api.nbp.pl/api/exchangerates/tables/A?format=json"
     RAW_DIR = "data/raw"
-    MY_CURRENCIES = ["USD", "EUR", "GBP", "CHF"] # we want only these currencies
     DB_PATH = "data/database/rates.duckdb"
 
-    # 1. download data and save to file
+    cli = CliInterface()
+    args = cli.parse_arguments()
+
+    currency_list = [c.strip().upper() for c in args.currencies.split(',')]
+
+    # 1. extract data and save raw
     ingestor = DataIngestor(api_url=URL, output_dir=RAW_DIR)
     raw_data = ingestor.fetch_data()
     ingestor.save_to_raw(raw_data)
@@ -23,7 +29,7 @@ def main():
 
     if raw_json:
         validated = processor.validate_data(raw_json)
-        cleaned = processor.clean_data(validated, MY_CURRENCIES)
+        cleaned = processor.clean_data(validated, currency_list)
 
         # PANDAS TRANSFORMATION
         df = DataTransformer.to_dataframe(cleaned)
@@ -32,20 +38,34 @@ def main():
 
         # DATABASE LOAD
         db = DatabaseManager(db_path=DB_PATH)
+        # Use the arguments in the process
+        quality_checker = DataQualityChecker(db)
+        df = quality_checker.check_volatility(df, threshold=args.threshold)
+
         db.save_dataframe(df, table_name="currency_rates")
 
+        # Enrichment - gold
+        if args.check_gold:
+            print("Fetching gold prices as requested...")
+            # gold_ingestor.fetch()...
+
+        # REPORTING - TODO
+
+        
         # print(f"Data fetch date: {cleaned.effectiveDate}")
         # for r in cleaned.rates:
         #     print(f"Rate {r.code}: {r.rate} PLN")
         
         # DEBUG CHECK:
-        print("\n--- Database data check ---")
-        try:
-            check_conn = duckdb.connect(DB_PATH)
-            print(check_conn.query("SELECT * FROM currency_rates LIMIT 100").df())
-            check_conn.close()
-        except Exception as e:
-            print(f"Database check error: {e}")
+        # print("\n--- Database data check ---")
+        # try:
+        #     check_conn = duckdb.connect(DB_PATH)
+        #     print(check_conn.query("SELECT * FROM currency_rates LIMIT 100").df())
+        #     check_conn.close()
+        # except Exception as e:
+        #     print(f"Database check error: {e}")
+    
+    print(f"Pipeline finished for currencies: {currency_list}")
 
 if __name__ == "__main__":
     main()

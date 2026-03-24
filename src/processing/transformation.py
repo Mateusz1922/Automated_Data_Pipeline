@@ -3,7 +3,7 @@
 import pandas as pd
 import logging
 from datetime import datetime
-from src.models import RateTable
+from src.models.pydantic import RateTable
 
 class DataTransformer:
     @staticmethod
