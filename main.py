@@ -40,7 +40,7 @@ def main():
         db = DatabaseManager(db_path=DB_PATH)
         # Use the arguments in the process
         quality_checker = DataQualityChecker(db)
-        df = quality_checker.check_volatility(df, threshold=args.threshold)
+        df = quality_checker.check_for_anomalies(df, threshold=args.threshold)
 
         db.save_dataframe(df, table_name="currency_rates")
 
@@ -50,8 +50,14 @@ def main():
             # gold_ingestor.fetch()...
 
         # REPORTING - TODO
-
         
+
+    
+    print(f"Pipeline finished for currencies: {currency_list}")
+
+if __name__ == "__main__":
+    main()
+
         # print(f"Data fetch date: {cleaned.effectiveDate}")
         # for r in cleaned.rates:
         #     print(f"Rate {r.code}: {r.rate} PLN")
@@ -64,10 +70,3 @@ def main():
         #     check_conn.close()
         # except Exception as e:
         #     print(f"Database check error: {e}")
-    
-    print(f"Pipeline finished for currencies: {currency_list}")
-
-if __name__ == "__main__":
-    main()
-
-

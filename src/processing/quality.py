@@ -6,7 +6,7 @@ class DataQualityChecker:
     def __init__(self, db_manager):
         self.db = db_manager
 
-    def check_volatility(self, df: pd.DataFrame, threshold: float = 0.20):
+    def check_for_anomalies(self, df: pd.DataFrame, threshold: float = 0.20):
         df['is_anomaly'] = False
 
         for index, row in df.iterrows():
