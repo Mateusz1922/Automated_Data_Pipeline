@@ -35,25 +35,35 @@ class DatabaseManager:
 
         try:
             # explicitly registered dataframe
-            conn.register('temp_df', df)
+            # conn.register('temp_df', df)
             logging.info(f"Starting connection with database: {self.db_path}")
+
+            # 1. Defining unique keys for different tables
+            if table_name == "currency_rates":
+                # For currencies we check a pair code+date.
+                conflict_condition = "t.code = s.code AND t.effective_date = s.effective_date"
+            elif table_name == "gold_rates":
+                # For gold only date
+                conflict_condition = "t.date = s.date"
+            else:
+                conflict_condition = "1=0" # By default let it all
+
             # duck db sees the variable df from Python local range
             conn.execute(f"""CREATE TABLE IF NOT EXISTS {table_name} AS 
-                             SELECT * FROM temp_df WHERE 1=0
+                             SELECT * FROM df WHERE 1=0
                           """) # now we copy only column headers, initiating empty table
             conn.execute(f"""INSERT INTO {table_name} 
-                           SELECT * FROM temp_df
+                           SELECT * FROM df AS s
                            WHERE NOT EXISTS (
-                               SELECT 1 FROM {table_name} t
-                               WHERE t.code = temp_df.code
-                               AND t.effective_date = temp_df.effective_date
+                               SELECT 1 FROM {table_name} AS t
+                               WHERE {conflict_condition}
                             )
                         """)
 
             # Check number of rows after saving
             count = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
             logging.info(f"Success! Table '{table_name}' has now {count} rows.")
-            conn.unregister('temp_df')
+            # conn.unregister('temp_df')
         
         except Exception as e:
             logging.error(f"Saving to database error: {e}")

@@ -32,5 +32,29 @@ class DataTransformer:
 
         logging.info(f"Transformation completed. Rows number: {len(df)}")
         return df
+    
+    @staticmethod
+    def gold_to_dataframe(gold_data) -> pd.DataFrame:
+        """
+        Dedicated transformation for gold data. 
+        Receives Pydantic GoldPrice object
+        """
+        logging.info("Gold transformation to pandas format...")
+        
+        # list with 1 dict as NBP makes it
+        data = [{
+            "date": gold_data.date,
+            "price_per_gram": gold_data.price,
+            "processed_at": datetime.now(),
+            "source": "NBP API"
+        }]
+        
+        df = pd.DataFrame(data)
+        df = df.convert_dtypes()
+        df['date'] = pd.to_datetime(df['date'])
+        df['source'] = df['source']
+        df['price_per_gram'] = df['price_per_gram']
+        
+        return df
 
 

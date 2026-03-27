@@ -13,3 +13,7 @@ class RateTable(BaseModel):
     no: str
     effectiveDate: str
     rates: List[CurrencyRate] # CurrencyRate objects list
+
+class GoldPrice(BaseModel):
+    date: str = Field(alias="data")
+    price: float = Field(alias="cena")
