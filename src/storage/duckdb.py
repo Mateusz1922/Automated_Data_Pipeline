@@ -9,13 +9,18 @@ class DatabaseManager:
         # ensure that folder for the database exists
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
     
-    def execute_query(self, query: str, params=None):
+    def execute_query(self, query: str):
         """Universal method to ingest data from the database"""
         conn = duckdb.connect(str(self.db_path))
         try:
-            if params:
-                return conn.execute(query, params).fetchall() # co to robi?
             return conn.execute(query).fetchall()
+        except duckdb.CatalogException:
+            # it happens when there is no table yet
+            logging.info('The table does not exist yet. Probably first run')
+            return []
+        except Exception as e:
+            logging.error(f"Other database error: {e}")
+            return []
         finally:
             conn.close()
     
@@ -51,7 +56,8 @@ class DatabaseManager:
             conn.unregister('temp_df')
         
         except Exception as e:
-            raise logging.error(f"Saving to database error: {e}")
+            logging.error(f"Saving to database error: {e}")
+            raise e
         finally:
             if conn:
                 conn.close()

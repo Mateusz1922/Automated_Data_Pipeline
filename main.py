@@ -4,7 +4,7 @@ from src.processing.transformation import DataTransformer
 from src.storage.duckdb import DatabaseManager
 from src.processing.quality import DataQualityChecker
 from src.analytics.cli import CliInterface
-import duckdb
+from src.analytics.reporting import ReportGenerator
 
 def main():
     # We can use a free NBP API: https://api.nbp.pl/api/exchangerates/tables/A?format=json
@@ -50,6 +50,11 @@ def main():
             # gold_ingestor.fetch()...
 
         # REPORTING - TODO
+        report_gen = ReportGenerator(db, output_dir=REPORT_DIR)
+
+        # separate charts for every currency
+        for code in currency_list:
+            report_gen.generate_trend_chart(currency_code=code, days_back=args.days)
         
 
     
