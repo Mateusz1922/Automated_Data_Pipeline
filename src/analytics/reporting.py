@@ -55,6 +55,7 @@ class ReportGenerator:
                 ORDER BY g.date ASC                
         """
         data = self.db.execute_query(query)
+        logging.info(f"Length of data: {len(data)}")
         if len(data) < 2:
             logging.warning("Not enough data to make the comparison")
             return
