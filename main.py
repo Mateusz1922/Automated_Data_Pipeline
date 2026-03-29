@@ -11,12 +11,46 @@ from src.ingestion.market_data import GoldIngestor
 from src.models.pydantic import GoldPrice
 import pandas as pd
 from datetime import datetime
+import logging
+from logging.handlers import RotatingFileHandler
+from dotenv import load_dotenv
+from src.analytics.notifications import TelegramNotifier
+import html
 
 # get the absolute path to the folder where main.py is
 BASE_DIR = Path(__file__).resolve().parent
 
+load_dotenv()
+
+# console and file logging configuration
+def setup_logging():
+    os.makedirs("data", exist_ok=True)
+    log_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    log_file = "data/pipeline.log"
+
+    # handler for a file (max 5MB, keep 3 last files)
+    file_handler = RotatingFileHandler(log_file, maxBytes=5*1024*1024, backupCount=3)
+    file_handler.setFormatter(log_formatter)
+
+    # handler for the console
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(log_formatter)
+
+    logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler])
+
 def main():
     # We can use a free NBP API: https://api.nbp.pl/api/exchangerates/tables/A?format=json
+    setup_logging()
+
+    # loads TOKEN and CHAT_ID from .env file
+    load_dotenv()
+
+    # Notifier initialization
+    notifier = TelegramNotifier(
+        token=os.getenv("TELEGRAM_TOKEN"),
+        chat_id=os.getenv("TELEGRAM_CHAT_ID")
+    )
+    logging.info("--- START PIPELINE ---")
 
     URL = "https://api.nbp.pl/api/exchangerates/tables/A?format=json"
     RAW_DIR = BASE_DIR / "data" / "raw"
@@ -80,20 +114,21 @@ def main():
             report_gen.generate_gold_vs_currency_chart(currency_code=currency)
 
     
-    print(f"Pipeline finished for currencies: {currency_list}")
+    logging.info(f"--- PIPELINE FINISHED SUCCESSFULLY FOR CURRENCIES {currency_list} ---")
+    notifier.send_message(("✅ <b>Pipeline NBP:</b> Data ingested and processed successfully!"))
 
+# 3. Orchestration and monitoring
 if __name__ == "__main__":
-    main()
+    error_notifier = TelegramNotifier(os.getenv("TELEGRAM_TOKEN"), os.getenv("TELEGRAM_CHAT_ID"))
 
-        # print(f"Data fetch date: {cleaned.effectiveDate}")
-        # for r in cleaned.rates:
-        #     print(f"Rate {r.code}: {r.rate} PLN")
-        
-        # DEBUG CHECK:
-        # print("\n--- Database data check ---")
-        # try:
-        #     check_conn = duckdb.connect(DB_PATH)
-        #     print(check_conn.query("SELECT * FROM currency_rates LIMIT 100").df())
-        #     check_conn.close()
-        # except Exception as e:
-        #     print(f"Database check error: {e}")
+    try:
+        main()
+    except Exception as e:
+        error_text = str(e)
+        # cleaning the error so that it does not destroy the HTML of Telegram 
+        safe_error_text = html.escape(error_text)
+        error_msg = f"❌ <b>CRITICAL ERROR:</b>\n<code>{safe_error_text}</code>"
+        logging.error(f"Pipeline failed: {e}")
+        error_notifier.send_message(error_msg)
+        exit(1) # important for github actions so that it knows that it's failed
+

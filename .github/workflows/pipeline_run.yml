@@ -1,0 +1,28 @@
+# configurated cron, so that the script is invoked every day at 16.00 pm
+name: NBP Pipeline Cron
+
+on: 
+  schedule:
+    - cron: "0 16 * * 1-5" # Monday to Friday at 16
+  workflow_dispatch: # lets it be invoked manually with a button in GitHub
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Run Pipeline
+      run: python main.py --currencies USD,EUR --check-gold --days 30
+    - name: Commit artifacts (Database & Charts)
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add data/database/ data/reports/
+        git commit -m "Auto-update database and charts" || echo "No changes"
+        git push 
