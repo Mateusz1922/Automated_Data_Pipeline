@@ -13,7 +13,11 @@ jobs:
   run-pipeline:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code  
+      uses: actions/checkout@v4
+      with:
+        # we have to fetch history to make a commit
+        fetch-depth: 0
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
