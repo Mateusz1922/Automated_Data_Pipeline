@@ -6,6 +6,9 @@ on:
     - cron: "0 16 * * 1-5" # Monday to Friday at 16
   workflow_dispatch: # lets it be invoked manually with a button in GitHub
 
+permissions:
+  contents: write # bot can do the git push
+
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
