@@ -9,5 +9,5 @@ SELECT
     raw_json:effectiveDate::DATE as rate_date,
     f.value:currency::STRING as currency_code,
     f.value:mid::FLOAT as exchange_rate
-FROM nbp_raw_ingestion,
+FROM nbp_db.raw_data.nbp_raw_ingestion,
 LATERAL FLATTEN(input => raw_json:rates) f;

@@ -42,13 +42,14 @@ class DataIngestor:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_path = self.output_dir / f"raw_data_{timestamp}.json"
         
-        # MIEJSCE NA IMPLEMENTACJĘ:
-        # 1. Otwórz plik w trybie zapisu ('w')
-        # 2. Użyj json.dump(data, f, indent=4), aby zapisać dane
+        # 1. open file in a write mode
+        # 2. use json.dump(data, f, indent=4), to save the data
         try:
             with open(file_path, "w", encoding="utf-8") as f:
                 # dump: data -> to file f -> with 4 spaces indent
                 json.dump(data, f, indent=4, ensure_ascii=False)
+            
             logging.info(f"Data saved in: {file_path}")
+            return file_path
         except Exception as e:
             raise logging.error(f"Error during data saving to file: {e}")

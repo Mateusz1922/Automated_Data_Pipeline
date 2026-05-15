@@ -16,6 +16,7 @@ from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
 from src.analytics.notifications import TelegramNotifier
 import html
+from azure.storage.blob import BlobServiceClient
 
 # get the absolute path to the folder where main.py is
 BASE_DIR = Path(__file__).resolve().parent
@@ -37,6 +38,25 @@ def setup_logging():
     console_handler.setFormatter(log_formatter)
 
     logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler])
+
+# azure upload
+def upload_to_azure(local_file_path, blob_name):
+    azure_connection_string = os.getenv("AZURE_CONNECTION_STRING")
+    azure_container_name = os.getenv("AZURE_CONTAINER_NAME")
+    try:
+        # connection with Azure
+        blob_service_client = BlobServiceClient.from_connection_string(azure_connection_string)
+        blob_client = blob_service_client.get_blob_client(container=azure_container_name, blob=blob_name)
+        logging.info(f"Uploading {local_file_path} to Azure Blob Storage...")
+
+        with open(local_file_path, "rb") as data:
+            blob_client.upload_blob(data, overwrite=True)
+        
+        logging.info(f"Upload successfull")
+
+    except Exception as e:
+        logging.error(f"Error uploading to Azure: {e}")
+
 
 def main():
     # We can use a free NBP API: https://api.nbp.pl/api/exchangerates/tables/A?format=json
@@ -65,7 +85,13 @@ def main():
     # 1. extract data and save raw
     ingestor = DataIngestor(api_url=URL, output_dir=RAW_DIR)
     raw_data = ingestor.fetch_data()
-    ingestor.save_to_raw(raw_data)
+    saved_path = ingestor.save_to_raw(raw_data)
+
+    # --- AZURE Upload ---
+    if saved_path:
+        # ingest the filename from the path
+        filename = os.path.basename(saved_path)
+        upload_to_azure(saved_path, filename)
 
     # 2. Processing: read the file, validate and clean the data
     processor = DataProcessor(input_dir=RAW_DIR)

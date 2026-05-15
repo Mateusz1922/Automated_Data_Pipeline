@@ -9,5 +9,16 @@ CREATE OR REPLACE TABLE nbp_raw_ingestion (
 );
 
 -- DATA LOADING (we can invoke it manually or via ADF)
-COPY INTO nbp_raw_ingestion (raw_json, filename)
-FROM (SELECT $1, metadata$filename FROM @nbp_azure_stage);
+USE DATABASE nbp_db;
+
+COPY INTO nbp_db.raw_data.nbp_raw_ingestion (raw_json, filename)
+FROM (
+    SELECT $1, metadata$filename
+    FROM @nbp_db.public.nbp_azure_stage
+)
+FILE_FORMAT = (FORMAT_NAME = 'nbp_db.public.nbp_json_format');
+
+-- 3. Sprawdźmy, czy dane tam są
+SELECT * FROM nbp_db.raw_data.nbp_raw_ingestion;
+
+-- SHOW STAGES IN ACCOUNT;
