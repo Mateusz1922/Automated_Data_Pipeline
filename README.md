@@ -31,6 +31,10 @@ Visualization: Matplotlib
 
 Environment: Pathlib (OS-agnostic paths), Dotenv
 
+Data Warehouse: Snowflake
+
+Landing Zone: Azure Blob Storage
+
 📂 Project Structure
 Automated_Data_Pipeline/
 ├── data/
@@ -77,6 +81,15 @@ Validation: Every API response is checked against a Pydantic model. If the schem
 Anomaly Detection: If a currency moves more than X% (default 10%) compared to the last database entry, it is flagged in the is_anomaly column and a warning is logged.
 
 Visual Analytics: The system automatically generates a correlation chart between Gold and USD, allowing for quick visual market analysis.
+
+🏗 Architecture
+Extraction: Python script fetches JSON data from NBP API.
+
+Landing Zone: Data is uploaded to Azure Blob Storage (Bronze Layer).
+
+Data Warehouse: Snowflake ingests raw JSON via Storage Integration.
+
+Transformation: SQL Views transform semi-structured JSON into relational tables (Silver Layer).
 
 📈 Future Roadmap
 CI/CD Integration: Automated testing and linting via GitHub Actions.
