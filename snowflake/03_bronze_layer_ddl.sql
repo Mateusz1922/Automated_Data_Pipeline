@@ -11,7 +11,7 @@ CREATE OR REPLACE TABLE nbp_raw_ingestion (
 -- DATA LOADING (we can invoke it manually or via ADF)
 USE DATABASE nbp_db;
 
-COPY INTO nbp_db.raw_data.nbp_raw_ingestion (raw_json, filename)
+COPY INTO nbp_raw_ingestion (raw_json, filename)
 FROM (
     SELECT $1, metadata$filename
     FROM @nbp_db.public.nbp_azure_stage
@@ -19,6 +19,6 @@ FROM (
 FILE_FORMAT = (FORMAT_NAME = 'nbp_db.public.nbp_json_format');
 
 -- 3. Sprawdźmy, czy dane tam są
-SELECT * FROM nbp_db.raw_data.nbp_raw_ingestion;
+SELECT * FROM nbp_raw_ingestion;
 
 -- SHOW STAGES IN ACCOUNT;

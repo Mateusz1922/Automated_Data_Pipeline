@@ -5,11 +5,12 @@ AUTO_SUSPEND = 60
 AUTO_RESUME = TRUE;
 
 -- create database and scheme
-CREATE DATABASE nbp_db;
-CREATE SCHEMA nbp_db.raw_data;
+CREATE DATABASE IF NOT EXISTS nbp_db;
+CREATE SCHEMA IF NOT EXISTS nbp_db.raw_data;
+CREATE SCHEMA IF NOT EXISTS nbp_db.public;
 
 -- set the work context
 USE WAREHOUSE nbp_wh;
 USE DATABASE nbp_db;
-USE SCHEMA raw_data;
+USE SCHEMA public;
 
