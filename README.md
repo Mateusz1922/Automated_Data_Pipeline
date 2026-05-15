@@ -91,6 +91,17 @@ Data Warehouse: Snowflake ingests raw JSON via Storage Integration.
 
 Transformation: SQL Views transform semi-structured JSON into relational tables (Silver Layer).
 
+❄️ Snowflake Setup
+The SQL scripts in /snowflake directory follow the Medallion Architecture:
+
+01_setup: RBAC and Databases.
+
+02_integration: Cloud connectivity.
+
+03_bronze: Raw data ingestion.
+
+04_silver: Data cleaning and typing.
+
 📈 Future Roadmap
 CI/CD Integration: Automated testing and linting via GitHub Actions.
 
